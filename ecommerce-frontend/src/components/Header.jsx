@@ -1,5 +1,5 @@
 // src/components/Header.jsx
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ShoppingBag, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
@@ -10,6 +10,14 @@ const Header = () => {
   const { user, logout } = useAuthStore();
   const { cart, fetchCart } = useCartStore();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim() !== '') {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(''); // Xóa thanh search sau khi tìm
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -38,9 +46,15 @@ const Header = () => {
           <input 
             type="text" 
             placeholder="Tìm kiếm sản phẩm..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
             className="w-full bg-slate-100 border border-transparent rounded-full py-2.5 pl-5 pr-12 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 transition-all"
           />
-          <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-primary transition-colors">
+          <button 
+            onClick={() => handleSearch({ key: 'Enter' })}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-primary transition-colors"
+          >
             <Search size={18} />
           </button>
         </div>

@@ -348,16 +348,16 @@ const Profile = () => {
                             <p className="text-sm font-medium text-slate-700">Ngày đặt: {new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
                           </div>
                           <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            order.status === 'pending' ? 'bg-orange-100 text-orange-600' :
-                            order.status === 'processing' ? 'bg-blue-100 text-blue-600' :
-                            order.status === 'shipped' ? 'bg-purple-100 text-purple-600' :
-                            order.status === 'delivered' ? 'bg-green-100 text-green-600' :
+                            order.status === 'Pending' ? 'bg-orange-100 text-orange-600' :
+                            order.status === 'Processing' ? 'bg-blue-100 text-blue-600' :
+                            order.status === 'Shipped' ? 'bg-purple-100 text-purple-600' :
+                            order.status === 'Delivered' ? 'bg-green-100 text-green-600' :
                             'bg-red-100 text-red-600'
                           }`}>
-                            {order.status === 'pending' ? 'Chờ xác nhận' :
-                             order.status === 'processing' ? 'Đang chuẩn bị' :
-                             order.status === 'shipped' ? 'Đang giao hàng' :
-                             order.status === 'delivered' ? 'Đã giao' : 'Đã hủy'}
+                            {order.status === 'Pending' ? 'Chờ xác nhận' :
+                             order.status === 'Processing' ? 'Đang chuẩn bị' :
+                             order.status === 'Shipped' ? 'Đang giao hàng' :
+                             order.status === 'Delivered' ? 'Đã giao' : 'Đã hủy'}
                           </div>
                         </div>
                         <div className="flex justify-between items-end">

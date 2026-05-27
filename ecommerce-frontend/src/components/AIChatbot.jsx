@@ -1,6 +1,7 @@
 // src/components/AIChatbot.jsx
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 
 const AIChatbot = () => {
@@ -31,7 +32,13 @@ const AIChatbot = () => {
 
     try {
       const response = await axiosClient.post('/chatbot', { message: userMessage });
-      setMessages(prev => [...prev, { text: response.data.response, isBot: true }]);
+      const data = response.data.response;
+      
+      if (typeof data === 'object' && data !== null) {
+        setMessages(prev => [...prev, { text: data.text || "...", suggestedProducts: data.suggestedProducts || [], isBot: true }]);
+      } else {
+        setMessages(prev => [...prev, { text: data, isBot: true }]);
+      }
     } catch (error) {
       console.error("Lỗi gọi Chatbot API:", error);
       setMessages(prev => [...prev, { text: "Xin lỗi, hệ thống đang bận. Vui lòng thử lại sau.", isBot: true }]);
@@ -73,7 +80,23 @@ const AIChatbot = () => {
                 {msg.isBot ? <Bot size={16} /> : <User size={16} />}
               </div>
               <div className={`p-3 rounded-2xl text-sm ${msg.isBot ? 'bg-white border border-slate-100 text-slate-700 rounded-tl-none' : 'bg-slate-900 text-white rounded-tr-none'}`}>
-                {msg.text}
+                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
+                {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
+                  <div className="mt-4 flex flex-col gap-3">
+                    {msg.suggestedProducts.map(p => (
+                      <div key={p._id} className="flex gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50 items-center shadow-sm">
+                        <img src={p.image || 'https://via.placeholder.com/150'} alt={p.name} className="w-14 h-14 object-cover rounded-lg bg-white" />
+                        <div className="flex flex-col flex-1">
+                          <span className="text-xs font-bold line-clamp-2 text-slate-800 leading-tight">{p.name}</span>
+                          <span className="text-xs text-red-500 font-semibold mt-1">{p.price?.toLocaleString('vi-VN')} ₫</span>
+                        </div>
+                        <Link to={`/product/${p._id}`} className="text-[11px] font-medium bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primaryHover transition-all shadow-sm">
+                          Xem chi tiết
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}

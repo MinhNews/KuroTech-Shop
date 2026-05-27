@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useProductStore from '../store/useProductStore';
+import useCartStore from '../store/useCartStore';
 import { motion } from 'framer-motion';
 import axiosClient from '../api/axiosClient';
 
@@ -10,6 +11,7 @@ const Motion = motion;
 
 const Home = () => {
   const { products, isLoading: isProductLoading, fetchProducts } = useProductStore();
+  const { addToCart } = useCartStore();
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -127,7 +129,10 @@ const Home = () => {
                   />
                   
                   {/* Quick add button */}
-                  <button className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur text-primary font-medium py-3 rounded-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white">
+                  <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(item._id, 1); }}
+                    className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur text-primary font-medium py-3 rounded-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white"
+                  >
                     <ShoppingBag size={18} />
                     <span>Thêm nhanh</span>
                   </button>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ShoppingBag, ChevronDown, Filter } from 'lucide-react';
 import useProductStore from '../store/useProductStore';
+import useCartStore from '../store/useCartStore';
 import { motion } from 'framer-motion';
 import axiosClient from '../api/axiosClient';
 
@@ -10,8 +11,10 @@ const Motion = motion;
 
 const ProductList = () => {
   const { products, isLoading, fetchProducts } = useProductStore();
+  const { addToCart } = useCartStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const searchParam = searchParams.get('search');
   
   const [categories, setCategories] = useState([]);
   const [sortOrder, setSortOrder] = useState('newest');
@@ -25,17 +28,25 @@ const ProductList = () => {
   }, [fetchProducts]);
 
   const handleCategoryChange = (categoryId) => {
+    const newParams = new URLSearchParams(searchParams);
     if (categoryId === "all") {
-      setSearchParams({});
+      newParams.delete('category');
     } else {
-      setSearchParams({ category: categoryId });
+      newParams.set('category', categoryId);
     }
+    setSearchParams(newParams);
   };
 
   // Lọc sản phẩm
   let filteredProducts = activeCategory === "all" 
     ? [...products] 
     : products.filter(p => p.category?._id === activeCategory); 
+
+  if (searchParam) {
+    filteredProducts = filteredProducts.filter(p => 
+      p.name.toLowerCase().includes(searchParam.toLowerCase())
+    );
+  }
 
   // Sắp xếp
   if (sortOrder === 'price_asc') {
@@ -48,9 +59,11 @@ const ProductList = () => {
   }
     
   // Lấy tên danh mục đang chọn để hiển thị tiêu đề
-  const activeCategoryName = activeCategory === "all" 
-    ? "Tất cả sản phẩm" 
-    : categories.find(c => c._id === activeCategory)?.name || "Danh mục";
+  const activeCategoryName = searchParam 
+    ? `Kết quả tìm kiếm cho "${searchParam}"`
+    : activeCategory === "all" 
+      ? "Tất cả sản phẩm" 
+      : categories.find(c => c._id === activeCategory)?.name || "Danh mục";
 
   return (
     <div className="flex flex-col md:flex-row gap-8 pb-20">
@@ -145,7 +158,10 @@ const ProductList = () => {
                       alt={item.name} 
                       className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
                     />
-                    <button className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur text-primary font-medium py-3 rounded-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white">
+                    <button 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(item._id, 1); }}
+                      className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur text-primary font-medium py-3 rounded-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 hover:bg-primary hover:text-white"
+                    >
                       <ShoppingBag size={18} />
                       <span>Thêm nhanh</span>
                     </button>
