@@ -96,31 +96,32 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto pb-20 mt-4">
-      <Link to="/products" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-8 text-sm font-medium">
+    <div className="max-w-7xl mx-auto pb-24 mt-8 px-4">
+      <Link to="/products" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-10 text-sm font-semibold tracking-wide">
         <ArrowLeft size={16} /> Quay lại danh sách
       </Link>
 
-      <div className="bg-white rounded-3xl p-6 md:p-12 shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-12 lg:gap-20">
+      <div className="bg-white rounded-[2.5rem] p-6 md:p-12 shadow-[0_20px_60px_rgb(0,0,0,0.05)] border border-slate-100 flex flex-col lg:flex-row gap-16 lg:gap-24 relative items-start">
         
-        {/* Images Gallery */}
-        <div className="lg:w-1/2 flex flex-col gap-6">
-          <div className="w-full aspect-square bg-slate-50 rounded-2xl flex items-center justify-center p-8 border border-slate-100 overflow-hidden">
+        {/* Images Gallery (Sticky) */}
+        <div className="lg:w-1/2 flex flex-col gap-6 lg:sticky lg:top-32">
+          <div className="w-full aspect-[4/3] md:aspect-square bg-[#f8fafc] rounded-3xl flex items-center justify-center p-12 border border-slate-100 overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <img 
               src={mainImage || 'https://via.placeholder.com/600'} 
               alt={currentProduct.name} 
-              className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 hover:scale-105" 
+              className="w-full h-full object-contain transition-all duration-700 group-hover:scale-110 drop-shadow-xl" 
             />
           </div>
           {currentProduct.images && currentProduct.images.length > 1 && (
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
               {currentProduct.images.map((img, idx) => (
                 <button 
                   key={idx} 
                   onClick={() => setMainImage(img)}
-                  className={`w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all p-2 bg-white ${mainImage === img ? 'border-slate-800 p-1' : 'border-transparent hover:border-slate-200'}`}
+                  className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all duration-300 p-2 bg-white ${mainImage === img ? 'border-slate-800 p-1 shadow-md scale-105' : 'border-slate-100 hover:border-slate-300 opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-contain mix-blend-multiply" />
+                  <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
@@ -128,56 +129,59 @@ const ProductDetail = () => {
         </div>
 
         {/* Product Info */}
-        <div className="lg:w-1/2 flex flex-col justify-center">
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-bold tracking-widest uppercase text-slate-400 block">
-                {currentProduct.category?.name || "Chưa phân loại"}
+        <div className="lg:w-1/2 flex flex-col pt-4">
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                {currentProduct.category?.name || "Khác"}
               </span>
               {reviews.length > 0 && (
-                <div className="flex items-center gap-1 text-yellow-500">
-                  <Star fill="currentColor" size={16} />
-                  <span className="font-bold text-slate-700">{avgRating}</span>
-                  <span className="text-slate-400 text-sm">({reviews.length} đánh giá)</span>
+                <div className="flex items-center gap-1.5 text-yellow-500 bg-yellow-50 px-3 py-1 rounded-full">
+                  <Star fill="currentColor" size={14} />
+                  <span className="font-bold text-slate-800 text-sm">{avgRating}</span>
+                  <span className="text-slate-500 text-xs">({reviews.length})</span>
                 </div>
               )}
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-[1.1] mb-6">
               {currentProduct.name}
             </h1>
-            <div className="text-3xl font-light text-slate-900 mb-6">
+            <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 mb-8 inline-block">
               {currentProduct.price.toLocaleString('vi-VN')} ₫
             </div>
-            <p className="text-slate-600 leading-relaxed font-light">
+            <p className="text-slate-500 leading-relaxed font-light text-lg">
               {currentProduct.description || "Chưa có mô tả chi tiết cho sản phẩm này."}
             </p>
           </div>
 
-          <hr className="border-slate-100 my-8" />
+          <div className="w-full h-[1px] bg-gradient-to-r from-slate-200 via-slate-200 to-transparent my-8"></div>
 
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-700 font-medium">Tình trạng:</span>
-              <span className={currentProduct.stock > 0 ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                {currentProduct.stock > 0 ? `Còn hàng (${currentProduct.stock})` : "Hết hàng"}
-              </span>
+          <div className="flex flex-col gap-8">
+            <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <span className="text-slate-600 font-medium">Tình trạng kho:</span>
+              <div className="flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${currentProduct.stock > 0 ? "bg-emerald-500" : "bg-red-500"}`}></span>
+                <span className={currentProduct.stock > 0 ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>
+                  {currentProduct.stock > 0 ? `Sẵn sàng (${currentProduct.stock})` : "Hết hàng"}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex items-center border border-slate-200 rounded-full bg-slate-50 overflow-hidden w-32">
-                <button onClick={handleDecrease} className="px-4 py-3 text-slate-600 hover:bg-slate-200 transition"><Minus size={16} /></button>
-                <input type="text" value={quantity} readOnly className="w-full text-center font-medium focus:outline-none bg-transparent py-1" />
-                <button onClick={handleIncrease} className="px-4 py-3 text-slate-600 hover:bg-slate-200 transition"><Plus size={16} /></button>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex items-center justify-between border-2 border-slate-100 rounded-full bg-white overflow-hidden w-full sm:w-40 h-14 shadow-sm">
+                <button onClick={handleDecrease} className="w-12 h-full text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center"><Minus size={18} /></button>
+                <input type="text" value={quantity} readOnly className="flex-1 text-center font-bold text-lg text-slate-900 focus:outline-none bg-transparent" />
+                <button onClick={handleIncrease} className="w-12 h-full text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center"><Plus size={18} /></button>
               </div>
               
               <button 
                   onClick={handleAddToCart}
                   disabled={currentProduct.stock === 0}
-                  className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white font-medium py-4 px-8 rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl disabled:bg-slate-300 disabled:cursor-not-allowed"
+                  className="flex-1 w-full h-14 flex items-center justify-center gap-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-full hover:shadow-[0_10px_40px_rgb(15,23,42,0.3)] hover:-translate-y-1 transition-all duration-300 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
               >
                 <ShoppingBag size={20} />
-                Thêm vào giỏ
+                Thêm Vào Giỏ
               </button>
             </div>
           </div>

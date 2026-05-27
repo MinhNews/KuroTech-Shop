@@ -24,6 +24,7 @@ import OrderManage from './pages/admin/OrderManage';
 import UserManage from './pages/admin/UserManage';
 import CouponManage from './pages/admin/CouponManage';
 import BrandManage from './pages/admin/BrandManage';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // Component để check xem có render Header hay không (ẩn ở trang admin)
 const MainLayout = ({ children }) => {
@@ -33,9 +34,11 @@ const MainLayout = ({ children }) => {
   return (
     <>
       {!isAdminRoute && <Header />}
-      <main className={!isAdminRoute ? "min-h-screen pb-12" : ""}>
-        <div className={!isAdminRoute ? "container mx-auto px-4 pt-6" : ""}>
-          {children}
+      <main className={!isAdminRoute ? "min-h-screen pb-12 pt-[100px]" : ""}>
+        <div className={!isAdminRoute ? "container mx-auto px-4" : ""}>
+          <AnimatePresence mode="wait">
+            {children}
+          </AnimatePresence>
         </div>
       </main>
       {!isAdminRoute && <Footer />}
@@ -56,36 +59,60 @@ const RedirectIfAdmin = ({ children }) => {
   return children;
 };
 
+// Page Transition Wrapper
+const PageTransition = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// Component con để sử dụng useLocation cho Routes
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <Routes location={location} key={location.pathname}>
+      {/* Client Routes - Bọc bởi RedirectIfAdmin để đá Admin ra */}
+      <Route path="/" element={<RedirectIfAdmin><PageTransition><Home /></PageTransition></RedirectIfAdmin>} />
+      <Route path="/products" element={<RedirectIfAdmin><PageTransition><ProductList /></PageTransition></RedirectIfAdmin>} />
+      <Route path="/product/:id" element={<RedirectIfAdmin><PageTransition><ProductDetail /></PageTransition></RedirectIfAdmin>} />
+      <Route path="/cart" element={<RedirectIfAdmin><PageTransition><Cart /></PageTransition></RedirectIfAdmin>} />
+      <Route path="/checkout" element={<RedirectIfAdmin><PageTransition><Checkout /></PageTransition></RedirectIfAdmin>} />
+      <Route path="/my-orders" element={<RedirectIfAdmin><PageTransition><MyOrders /></PageTransition></RedirectIfAdmin>} />
+      
+      <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+      <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+      <Route path="/reset-password/:token" element={<PageTransition><ResetPassword /></PageTransition>} />
+      <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+
+      {/* Admin Routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="products" element={<ProductManage />} />
+        <Route path="categories" element={<CategoryManage />} />
+        <Route path="orders" element={<OrderManage />} />
+        <Route path="users" element={<UserManage />} />
+        <Route path="coupons" element={<CouponManage />} />
+        <Route path="brands" element={<BrandManage />} />
+      </Route>
+    </Routes>
+  );
+};
+
 function App() {
   return (
     <BrowserRouter>
       <MainLayout>
-        <Routes>
-          {/* Client Routes - Bọc bởi RedirectIfAdmin để đá Admin ra */}
-          <Route path="/" element={<RedirectIfAdmin><Home /></RedirectIfAdmin>} />
-          <Route path="/products" element={<RedirectIfAdmin><ProductList /></RedirectIfAdmin>} />
-          <Route path="/product/:id" element={<RedirectIfAdmin><ProductDetail /></RedirectIfAdmin>} />
-          <Route path="/cart" element={<RedirectIfAdmin><Cart /></RedirectIfAdmin>} />
-          <Route path="/checkout" element={<RedirectIfAdmin><Checkout /></RedirectIfAdmin>} />
-          <Route path="/my-orders" element={<RedirectIfAdmin><MyOrders /></RedirectIfAdmin>} />
-          
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/profile" element={<Profile />} />
-
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="products" element={<ProductManage />} />
-            <Route path="categories" element={<CategoryManage />} />
-            <Route path="orders" element={<OrderManage />} />
-            <Route path="users" element={<UserManage />} />
-            <Route path="coupons" element={<CouponManage />} />
-            <Route path="brands" element={<BrandManage />} />
-          </Route>
-        </Routes>
+        <AnimatedRoutes />
       </MainLayout>
     </BrowserRouter>
   );

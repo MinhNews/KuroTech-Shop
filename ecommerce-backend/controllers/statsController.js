@@ -16,18 +16,38 @@ const statsController = {
             const orderCount = orders.length;
             
             // Tính tổng doanh thu (Chỉ tính những đơn đã giao thành công)
-            const revenue = orders.reduce((total, order) => {
+            let revenue = 0;
+            
+            // Tính doanh thu theo từng tháng (cho biểu đồ)
+            const monthlyData = {
+                'Tháng 1': 0, 'Tháng 2': 0, 'Tháng 3': 0, 'Tháng 4': 0,
+                'Tháng 5': 0, 'Tháng 6': 0, 'Tháng 7': 0, 'Tháng 8': 0,
+                'Tháng 9': 0, 'Tháng 10': 0, 'Tháng 11': 0, 'Tháng 12': 0
+            };
+
+            orders.forEach(order => {
                 if (order.status === 'Delivered') {
-                    return total + order.totalAmount;
+                    revenue += order.totalAmount;
+                    
+                    // Lấy tháng của đơn hàng (1-12)
+                    const date = new Date(order.createdAt);
+                    const month = `Tháng ${date.getMonth() + 1}`;
+                    monthlyData[month] += order.totalAmount;
                 }
-                return total;
-            }, 0);
+            });
+            
+            // Chuyển object thành mảng cho Recharts
+            const chartData = Object.keys(monthlyData).map(key => ({
+                name: key,
+                revenue: monthlyData[key]
+            }));
 
             res.status(200).json({
                 products: productCount,
                 orders: orderCount,
                 users: userCount,
-                revenue: revenue
+                revenue: revenue,
+                chartData: chartData
             });
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });
