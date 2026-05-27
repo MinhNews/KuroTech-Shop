@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Thêm một chút base style cho toàn bộ web nền xám nhạt để làm nổi bật các Card màu trắng */
+body {
+  background-color: #f3f4f6;
+}
