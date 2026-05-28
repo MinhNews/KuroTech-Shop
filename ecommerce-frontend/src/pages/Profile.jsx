@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { User, Key, ShoppingBag, LogOut, ArrowLeft, Camera } from 'lucide-react';
@@ -47,9 +48,9 @@ const Profile = () => {
     try {
       const res = await axiosClient.put('/auth/profile', { username, email });
       updateUser(res.data.user);
-      alert("Cập nhật thông tin thành công!");
+      toast.success("Cập nhật thông tin thành công!");
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi cập nhật thông tin");
+      toast.error(error.response?.data?.message || "Lỗi cập nhật thông tin");
     } finally {
       setIsUpdatingInfo(false);
     }
@@ -58,10 +59,10 @@ const Profile = () => {
   const handleSendVerifyCode = async () => {
     try {
       await axiosClient.post('/auth/send-verification');
-      alert("Mã xác thực đã được gửi đến email của bạn!");
+      toast.success("Mã xác thực đã được gửi đến email của bạn!");
       setShowVerifyModal(true);
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi gửi mã xác thực");
+      toast.error(error.response?.data?.message || "Lỗi gửi mã xác thực");
     }
   };
 
@@ -70,10 +71,10 @@ const Profile = () => {
     try {
       const res = await axiosClient.post('/auth/verify-email', { token: verifyCode });
       updateUser(res.data.user);
-      alert("Xác thực email thành công!");
+      toast.success("Xác thực email thành công!");
       setShowVerifyModal(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Mã xác thực không hợp lệ");
+      toast.success(error.response?.data?.message || "Mã xác thực không hợp lệ");
     } finally {
       setIsVerifying(false);
     }
@@ -85,11 +86,11 @@ const Profile = () => {
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert('Chỉ chấp nhận file ảnh JPG, PNG hoặc WEBP!');
+      toast.success('Chỉ chấp nhận file ảnh JPG, PNG hoặc WEBP!');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Ảnh không được vượt quá 5MB!');
+      toast.success('Ảnh không được vượt quá 5MB!');
       return;
     }
 
@@ -104,10 +105,10 @@ const Profile = () => {
 
       updateUser(res.data.user);
       setAvatarPreview(null);
-      alert('Cập nhật avatar thành công!');
+      toast.success('Cập nhật avatar thành công!');
     } catch (error) {
       setAvatarPreview(null);
-      alert(error.response?.data?.message || 'Lỗi upload avatar!');
+      toast.error(error.response?.data?.message || 'Lỗi upload avatar!');
     } finally {
       setIsUploadingAvatar(false);
       e.target.value = '';
@@ -117,7 +118,7 @@ const Profile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwords.new !== passwords.confirm) {
-      return alert("Mật khẩu mới không khớp!");
+      return toast.success("Mật khẩu mới không khớp!");
     }
     setIsUpdatingPass(true);
     try {
@@ -125,10 +126,10 @@ const Profile = () => {
         currentPassword: passwords.current,
         newPassword: passwords.new
       });
-      alert("Đổi mật khẩu thành công!");
+      toast.success("Đổi mật khẩu thành công!");
       setPasswords({ current: '', new: '', confirm: '' });
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi đổi mật khẩu");
+      toast.error(error.response?.data?.message || "Lỗi đổi mật khẩu");
     } finally {
       setIsUpdatingPass(false);
     }

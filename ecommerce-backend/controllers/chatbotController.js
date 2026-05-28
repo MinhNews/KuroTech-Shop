@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const chatbotController = {
     chat: async (req, res) => {
         try {
-            const { message } = req.body;
+            const { message, history } = req.body;
             if (!message) {
                 return res.status(400).json({ message: "Vui lòng nhập tin nhắn!" });
             }
@@ -23,6 +23,21 @@ const chatbotController = {
                 const imgUrl = p.images && p.images.length > 0 ? p.images[0] : "";
                 productContext += `- ID: ${p._id}. Tên: ${p.name}. Giá: ${p.price?.toLocaleString()} VNĐ. Tồn kho: ${p.stock}. Danh mục: ${p.category?.name || 'Khác'}. Ảnh: ${imgUrl}. Mô tả: ${p.description?.substring(0, 50)}...\n`;
             });
+
+            // Gắn thêm lịch sử trò chuyện
+            let conversationHistory = "";
+            if (history && Array.isArray(history) && history.length > 0) {
+                conversationHistory = "\n\n--- LỊCH SỬ TRÒ CHUYỆN GẦN ĐÂY NHẤT CỦA BẠN VÀ KHÁCH HÀNG ---\n";
+                // Lấy 10 tin nhắn gần nhất để tránh vượt quá limit token
+                const recentHistory = history.slice(-10);
+                recentHistory.forEach(msg => {
+                    // Cắt bớt text nếu quá dài
+                    let text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+                    text = text.substring(0, 500); 
+                    conversationHistory += `* ${msg.role === 'user' ? 'Khách hàng' : 'Bạn (KuroAI)'}: ${text}\n`;
+                });
+                conversationHistory += "---------------------------\n";
+            }
 
             const systemPrompt = "Bạn là trợ lý ảo bán hàng xuất sắc của cửa hàng điện tử KuroTech. Cửa hàng chuyên bán điện thoại, laptop, phụ kiện chính hãng. " +
                 "Nhiệm vụ của bạn là tư vấn cho khách hàng cực kỳ nhiệt tình, chốt sale giỏi, sử dụng thông tin sản phẩm thực tế bên dưới để tư vấn. " +
@@ -41,11 +56,11 @@ const chatbotController = {
                 "Nếu không có sản phẩm nào phù hợp, hãy trả về mảng rỗng []. " +
                 "Tuyệt đối không trả về markdown bao quanh json (ví dụ không có ```json). Chỉ trả về chuỗi JSON thuần túy.\n" +
                 "Thông tin cửa hàng: Địa chỉ 120 Yên Lãng, Hà Nội. Hotline 19001234, email: 10a10nguyenducminh@gmail.com." +
-                productContext;
+                productContext + conversationHistory;
             
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
-                contents: systemPrompt + "\n\nKhách hàng: " + message,
+                contents: systemPrompt + "\n\nDựa vào lịch sử phía trên, hãy trả lời câu hỏi hiện tại này của khách hàng: " + message,
                 config: {
                     responseMimeType: "application/json",
                 }

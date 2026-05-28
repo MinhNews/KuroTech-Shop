@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 // src/pages/admin/CategoryManage.jsx
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, X, Search, LayoutList } from 'lucide-react';
@@ -64,7 +65,7 @@ const CategoryManage = () => {
       handleCloseModal();
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra, vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
@@ -75,7 +76,7 @@ const CategoryManage = () => {
         fetchCategories();
       } catch (error) {
         console.error(error);
-        alert("Xóa thất bại!");
+        toast.error("Xóa thất bại!");
       }
     }
   };

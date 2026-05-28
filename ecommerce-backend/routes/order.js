@@ -7,7 +7,9 @@ const { verifyToken, verifyTokenAndAdmin, verifyTokenAndAdminOrStaff } = require
 
 router.post('/checkout', verifyToken, orderController.checkout);
 router.get('/my-orders', verifyToken, orderController.getUserOrders);
+router.get('/:id', verifyToken, orderController.getOrderById);
 router.get('/', verifyTokenAndAdminOrStaff, orderController.getAllOrders);
 router.put('/:id/status', verifyTokenAndAdminOrStaff, orderController.updateOrderStatus);
+router.put('/:id/payment-status', verifyTokenAndAdminOrStaff, orderController.updatePaymentStatus);
 
 module.exports = router;

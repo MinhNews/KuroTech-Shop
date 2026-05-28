@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
 import UserAvatar from './UserAvatar';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const { user, logout } = useAuthStore();
@@ -61,7 +62,8 @@ const Header = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          <NotificationBell />
           <Link to="/cart" className="relative text-slate-600 hover:text-primary transition-transform duration-300 hover:scale-110">
             <ShoppingBag size={22} strokeWidth={1.5} />
             {cartItemCount > 0 && (

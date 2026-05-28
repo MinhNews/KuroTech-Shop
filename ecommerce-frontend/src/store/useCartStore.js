@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 // src/store/useCartStore.js
 import { create } from 'zustand';
 import axiosClient from '../api/axiosClient';
@@ -25,10 +26,10 @@ const useCartStore = create((set, get) => ({
       
       // Thêm xong thì gọi lại hàm fetchCart để cập nhật con số ngay lập tức
       get().fetchCart(); 
-      alert("Đã thêm vào giỏ hàng thành công!");
+      toast.success("Đã thêm vào giỏ hàng thành công!");
     } catch (error) {
       console.error(error);
-      alert("Bạn cần đăng nhập để mua hàng!");
+      toast.error("Bạn cần đăng nhập để mua hàng!");
     }
   },
 

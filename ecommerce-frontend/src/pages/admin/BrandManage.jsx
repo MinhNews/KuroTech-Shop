@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 // src/pages/admin/BrandManage.jsx
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, X, Search, Bookmark } from 'lucide-react';
@@ -62,7 +63,7 @@ const BrandManage = () => {
       handleCloseModal();
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra, vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
 
@@ -73,7 +74,7 @@ const BrandManage = () => {
         fetchBrands();
       } catch (error) {
         console.error(error);
-        alert("Xóa thất bại!");
+        toast.error("Xóa thất bại!");
       }
     }
   };

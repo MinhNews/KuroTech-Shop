@@ -84,15 +84,16 @@ const OrderManage = () => {
                 <th className="p-4 font-medium">Khách hàng</th>
                 <th className="p-4 font-medium">Ngày đặt</th>
                 <th className="p-4 font-medium">Tổng tiền</th>
+                <th className="p-4 font-medium">Thanh toán</th>
                 <th className="p-4 font-medium">Trạng thái</th>
                 <th className="p-4 font-medium text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                <tr><td colSpan="6" className="p-8 text-center text-slate-500">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan="7" className="p-8 text-center text-slate-500">Đang tải dữ liệu...</td></tr>
               ) : filteredOrders.length === 0 ? (
-                <tr><td colSpan="6" className="p-8 text-center text-slate-500">Chưa có đơn hàng nào.</td></tr>
+                <tr><td colSpan="7" className="p-8 text-center text-slate-500">Chưa có đơn hàng nào.</td></tr>
               ) : (
                 filteredOrders.map(order => (
                   <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
@@ -104,8 +105,16 @@ const OrderManage = () => {
                     <td className="p-4 text-sm text-slate-600">
                       {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                     </td>
+                    
                     <td className="p-4 font-medium text-slate-700">
                       {order.totalAmount.toLocaleString('vi-VN')} ₫
+                    </td>
+                    <td className="p-4">
+                      {order.paymentMethod === 'Banking' ? (
+                        <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded whitespace-nowrap">Chuyển khoản</span>
+                      ) : (
+                        <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded whitespace-nowrap">COD</span>
+                      )}
                     </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>

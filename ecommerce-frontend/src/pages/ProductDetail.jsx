@@ -1,7 +1,8 @@
+import toast from 'react-hot-toast';
 // src/pages/ProductDetail.jsx
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Minus, Plus, ShoppingBag, ArrowLeft, Star, MessageSquare } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, ArrowLeft, Star, MessageSquare, Camera, Edit, Trash2, Reply, Check, X } from 'lucide-react';
 import useProductStore from '../store/useProductStore';
 import useCartStore from '../store/useCartStore';
 import useAuthStore from '../store/useAuthStore';
@@ -21,7 +22,13 @@ const ProductDetail = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
+  const [reviewMedia, setReviewMedia] = useState([]);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  
+  // Edit & Reply States
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [replyingReviewId, setReplyingReviewId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
 
   useEffect(() => {
     fetchProductById(id);
@@ -55,28 +62,106 @@ const ProductDetail = () => {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!user) {
-      alert("Vui lòng đăng nhập để đánh giá sản phẩm!");
+      toast.error("Vui lòng đăng nhập để đánh giá sản phẩm!");
       return;
     }
     if (!reviewComment.trim()) return;
 
+    if (reviewMedia.length > 5) {
+      toast.error("Chỉ được tải lên tối đa 5 file ảnh/video!");
+      return;
+    }
+
     setIsSubmittingReview(true);
     try {
-      const res = await axiosClient.post('/reviews', {
-        productId: id,
-        rating: reviewRating,
-        comment: reviewComment
-      });
-      // Thêm review mới vào đầu danh sách
-      setReviews([res.data.data, ...reviews]);
+      let res;
+      const formData = new FormData();
+      formData.append('rating', reviewRating);
+      formData.append('comment', reviewComment);
+      
+      // Check if updating or creating
+      if (editingReviewId) {
+         // Keep it simple for now, just send comment and rating to update, and newly added media
+         reviewMedia.forEach(file => {
+             if (file instanceof File) {
+                 formData.append('media', file);
+             }
+         });
+         // (Not sending existing images in this simple implementation, assuming user is just adding)
+         res = await axiosClient.put(`/reviews/${editingReviewId}`, formData, {
+             headers: { 'Content-Type': 'multipart/form-data' }
+         });
+         setReviews(reviews.map(r => r._id === editingReviewId ? res.data.data : r));
+         toast.success("Cập nhật đánh giá thành công!");
+      } else {
+         formData.append('productId', id);
+         reviewMedia.forEach(file => {
+             formData.append('media', file);
+         });
+         res = await axiosClient.post('/reviews', formData, {
+             headers: { 'Content-Type': 'multipart/form-data' }
+         });
+         setReviews([res.data.data, ...reviews]);
+         toast.success("Cảm ơn bạn đã đánh giá sản phẩm!");
+      }
+      
       setReviewComment('');
       setReviewRating(5);
-      alert("Cảm ơn bạn đã đánh giá sản phẩm!");
+      setReviewMedia([]);
+      setEditingReviewId(null);
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi gửi đánh giá!");
+      toast.error(error.response?.data?.message || "Lỗi gửi đánh giá!");
     } finally {
       setIsSubmittingReview(false);
     }
+  };
+
+  const handleEditClick = (review) => {
+      setEditingReviewId(review._id);
+      setReviewRating(review.rating);
+      setReviewComment(review.comment);
+      // Giả lập đưa view lên form
+      const formElement = document.getElementById('reviewForm');
+      if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+      if (!window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+      try {
+          await axiosClient.delete(`/reviews/${reviewId}`);
+          setReviews(reviews.filter(r => r._id !== reviewId));
+          toast.success("Đã xóa đánh giá!");
+      } catch (err) {
+          toast.error("Lỗi khi xóa đánh giá");
+      }
+  };
+
+  const handleReplySubmit = async (reviewId) => {
+      if (!replyContent.trim()) return;
+      try {
+          const res = await axiosClient.put(`/reviews/${reviewId}/reply`, { sellerReply: replyContent });
+          setReviews(reviews.map(r => r._id === reviewId ? res.data.data : r));
+          setReplyingReviewId(null);
+          setReplyContent('');
+          toast.success("Đã gửi phản hồi!");
+      } catch (err) {
+          toast.error("Lỗi khi gửi phản hồi");
+      }
+  };
+
+  const handleFileChange = (e) => {
+      if (e.target.files) {
+          const files = Array.from(e.target.files);
+          if (reviewMedia.length + files.length > 5) {
+              toast.error("Tối đa 5 file!");
+              return;
+          }
+          setReviewMedia([...reviewMedia, ...files]);
+      }
+  };
+  
+  const removeMedia = (index) => {
+      setReviewMedia(reviewMedia.filter((_, i) => i !== index));
   };
 
   // Tính trung bình sao
@@ -204,8 +289,11 @@ const ProductDetail = () => {
                 <Link to="/login" className="inline-block bg-primary text-white font-medium px-6 py-2 rounded-lg hover:bg-primaryHover transition">Đăng nhập</Link>
               </div>
             ) : (
-              <form onSubmit={handleSubmitReview} className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 className="font-bold text-slate-800 mb-4">Viết đánh giá của bạn</h3>
+              <form id="reviewForm" onSubmit={handleSubmitReview} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 relative">
+                {editingReviewId && (
+                   <button type="button" onClick={() => { setEditingReviewId(null); setReviewComment(''); setReviewRating(5); setReviewMedia([]); }} className="absolute top-4 right-4 text-slate-400 hover:text-red-500"><X size={20}/></button>
+                )}
+                <h3 className="font-bold text-slate-800 mb-4">{editingReviewId ? 'Sửa đánh giá của bạn' : 'Viết đánh giá của bạn'}</h3>
                 
                 <div className="mb-4 flex items-center gap-2">
                   <span className="text-sm text-slate-600">Đánh giá:</span>
@@ -234,12 +322,34 @@ const ProductDetail = () => {
                   ></textarea>
                 </div>
 
+                {/* Upload Media */}
+                <div className="mb-4">
+                  <label className="flex items-center gap-2 text-sm text-primary font-medium cursor-pointer w-max hover:underline">
+                    <Camera size={18} /> Chọn ảnh/video (Tối đa 5)
+                    <input type="file" multiple accept="image/*,video/mp4,video/quicktime" className="hidden" onChange={handleFileChange} />
+                  </label>
+                  {reviewMedia.length > 0 && (
+                    <div className="flex gap-2 mt-3 flex-wrap">
+                      {reviewMedia.map((file, idx) => (
+                        <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
+                          {file.type?.startsWith('video') ? (
+                              <video src={URL.createObjectURL(file)} className="w-full h-full object-cover" />
+                          ) : (
+                              <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover" />
+                          )}
+                          <button type="button" onClick={() => removeMedia(idx)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl-lg"><X size={12} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button 
                   type="submit" 
                   disabled={isSubmittingReview}
                   className="w-full bg-slate-900 text-white font-medium py-3 rounded-xl hover:bg-slate-800 transition disabled:opacity-50"
                 >
-                  {isSubmittingReview ? 'Đang gửi...' : 'Gửi Đánh Giá'}
+                  {isSubmittingReview ? 'Đang gửi...' : (editingReviewId ? 'Cập nhật' : 'Gửi Đánh Giá')}
                 </button>
               </form>
             )}
@@ -268,9 +378,52 @@ const ProductDetail = () => {
                       ))}
                     </div>
                   </div>
-                  <p className="text-slate-600 text-sm pl-13 mt-2">
+                  
+                  <p className="text-slate-600 text-sm pl-13 mt-2 whitespace-pre-wrap">
                     {rev.comment}
                   </p>
+                  
+                  {/* Hiển thị ảnh / video */}
+                  {(rev.images?.length > 0 || rev.videos?.length > 0) && (
+                    <div className="flex gap-2 pl-13 mt-3 flex-wrap">
+                      {rev.videos?.map((vid, idx) => (
+                        <video key={`vid-${idx}`} src={vid} controls className="h-24 w-24 object-cover rounded-lg border border-slate-200" />
+                      ))}
+                      {rev.images?.map((img, idx) => (
+                        <img key={`img-${idx}`} src={img} alt="review" className="h-24 w-24 object-cover rounded-lg border border-slate-200 cursor-pointer hover:opacity-90" onClick={() => window.open(img, '_blank')} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hành động sửa/xóa/phản hồi */}
+                  <div className="pl-13 mt-3 flex items-center gap-4 text-xs font-medium">
+                    {user?._id === rev.user?._id && (
+                        <>
+                            <button onClick={() => handleEditClick(rev)} className="flex items-center gap-1 text-blue-600 hover:underline"><Edit size={14}/> Sửa</button>
+                            <button onClick={() => handleDeleteReview(rev._id)} className="flex items-center gap-1 text-red-500 hover:underline"><Trash2 size={14}/> Xóa</button>
+                        </>
+                    )}
+                    {(user?.role === 'admin' || user?.role === 'staff') && !rev.sellerReply && (
+                        <button onClick={() => setReplyingReviewId(replyingReviewId === rev._id ? null : rev._id)} className="flex items-center gap-1 text-primary hover:underline"><Reply size={14}/> Phản hồi</button>
+                    )}
+                  </div>
+
+                  {/* Khung nhập phản hồi (Admin) */}
+                  {replyingReviewId === rev._id && (
+                      <div className="pl-13 mt-3 flex gap-2">
+                          <input type="text" value={replyContent} onChange={e => setReplyContent(e.target.value)} placeholder="Nhập câu trả lời của Shop..." className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-primary" />
+                          <button onClick={() => handleReplySubmit(rev._id)} className="bg-primary text-white px-3 py-2 rounded-lg hover:bg-primaryHover"><Check size={16}/></button>
+                      </div>
+                  )}
+
+                  {/* Phản hồi từ Shop */}
+                  {rev.sellerReply && (
+                      <div className="ml-13 mt-4 bg-slate-50 border border-slate-100 rounded-xl p-4 relative">
+                          <div className="absolute -top-3 left-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[12px] border-b-slate-50"></div>
+                          <div className="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1">Phản hồi từ Shop <Check size={14} className="text-blue-500 bg-blue-100 rounded-full p-0.5" /></div>
+                          <p className="text-slate-600 text-sm whitespace-pre-wrap">{rev.sellerReply}</p>
+                      </div>
+                  )}
                 </div>
               ))
             )}

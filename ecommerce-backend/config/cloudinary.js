@@ -38,5 +38,22 @@ const uploadAvatar = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+
+// 5. Upload review media (hỗ trợ ảnh và video)
+const reviewStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ecommerce_reviews',
+    resource_type: 'auto',
+    allowedFormats: ['jpeg', 'png', 'jpg', 'webp', 'mp4', 'mov'],
+  }
+});
+
+const uploadReviewMedia = multer({
+  storage: reviewStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit per file
+});
+
 module.exports = uploadCloud;
+module.exports.uploadReviewMedia = uploadReviewMedia;
 module.exports.uploadAvatar = uploadAvatar;

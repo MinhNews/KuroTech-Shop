@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { Ticket, Plus, Trash2, Power } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
@@ -35,7 +36,7 @@ const CouponManage = () => {
       setFormData({ code: '', discountPercent: '' });
       fetchCoupons();
     } catch (error) {
-      alert(error.response?.data?.message || "Lỗi tạo mã giảm giá!");
+      toast.error(error.response?.data?.message || "Lỗi tạo mã giảm giá!");
     } finally {
       setIsSubmitting(false);
     }
@@ -47,7 +48,7 @@ const CouponManage = () => {
       fetchCoupons();
     } catch (error) {
       console.error(error);
-      alert("Lỗi cập nhật trạng thái!");
+      toast.error("Lỗi cập nhật trạng thái!");
     }
   };
 
@@ -58,7 +59,7 @@ const CouponManage = () => {
       fetchCoupons();
     } catch (error) {
       console.error(error);
-      alert("Lỗi xóa mã!");
+      toast.error("Lỗi xóa mã!");
     }
   };
 

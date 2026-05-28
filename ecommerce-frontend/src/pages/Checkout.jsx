@@ -10,6 +10,7 @@ const Checkout = () => {
   
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [orderTotal, setOrderTotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponInput, setCouponInput] = useState('');
@@ -56,6 +57,7 @@ const Checkout = () => {
       });
 
       setOrderId(res.data.orderId);
+      setOrderTotal(finalTotalAmount);
       setIsSuccess(true);
       fetchCart(); // Xóa giỏ hàng local bằng cách fetch lại
     } catch (error) {
@@ -68,6 +70,48 @@ const Checkout = () => {
 
   // MÀN HÌNH ĐẶT HÀNG THÀNH CÔNG
   if (isSuccess) {
+    if (paymentMethod === 'Banking') {
+      const bankId = 'vietinbank';
+      const accountNo = '0822770286';
+      const accountName = 'NGUYEN DUC MINH';
+      const description = `Thanh toan don hang ${orderId.substring(orderId.length - 8).toUpperCase()}`;
+      const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${orderTotal}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
+
+      return (
+        <div className="max-w-2xl mx-auto text-center py-12">
+          <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 flex flex-col items-center">
+            <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle size={32} />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">Đặt hàng thành công!</h2>
+            <p className="text-slate-500 mb-8">Vui lòng quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán đơn hàng.</p>
+            
+            <div className="bg-slate-50 p-4 rounded-3xl border-2 border-dashed border-slate-200 mb-8 inline-block">
+              <img src={qrUrl} alt="VietQR" className="w-64 h-64 md:w-80 md:h-80 object-contain rounded-2xl mix-blend-multiply" />
+            </div>
+
+            <div className="bg-blue-50 text-blue-800 p-4 rounded-xl mb-8 w-full max-w-sm text-left">
+              <p className="font-bold mb-2">Thông tin chuyển khoản thủ công:</p>
+              <p className="text-sm">Ngân hàng: <span className="font-semibold">VietinBank</span></p>
+              <p className="text-sm">Số tài khoản: <span className="font-semibold">{accountNo}</span></p>
+              <p className="text-sm">Chủ tài khoản: <span className="font-semibold">{accountName}</span></p>
+              <p className="text-sm">Số tiền: <span className="font-semibold text-red-500">{orderTotal.toLocaleString('vi-VN')} ₫</span></p>
+              <p className="text-sm">Nội dung CK: <span className="font-semibold bg-white px-2 py-0.5 rounded text-black">{description}</span></p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <Link to="/products" className="flex-1 bg-white border-2 border-primary text-primary font-bold py-3 px-8 rounded-xl hover:bg-blue-50 transition-colors">
+                Tiếp tục mua sắm
+              </Link>
+              <Link to="/my-orders" className="flex-1 bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primaryHover transition-colors shadow-lg shadow-blue-500/30">
+                Tôi đã chuyển khoản
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12">
         <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -84,15 +128,15 @@ const Checkout = () => {
           </div>
           <div className="flex justify-between mb-2">
             <span className="text-gray-500">Phương thức thanh toán:</span>
-            <span className="font-bold text-gray-800">{paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : 'Thẻ Tín Dụng / Ghi Nợ'}</span>
+            <span className="font-bold text-gray-800">{paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản Ngân hàng'}</span>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex justify-center gap-4">
           <Link to="/products" className="bg-white border-2 border-primary text-primary font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
             Tiếp tục mua sắm
           </Link>
-          <Link to="/" className="bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primaryHover transition-colors shadow-md">
-            Về Trang Chủ
+          <Link to="/my-orders" className="bg-primary text-white font-bold py-3 px-8 rounded-lg hover:bg-primaryHover transition-colors shadow-md">
+            Xem đơn hàng
           </Link>
         </div>
       </div>
@@ -190,18 +234,19 @@ const Checkout = () => {
                 </div>
               </label>
 
-              {/* Online (Disabled for now as not implemented) */}
-              <label className={`border-2 p-4 rounded-lg flex items-center gap-4 opacity-50`}>
+              {/* Banking (QR) */}
+              <label className={`border-2 p-4 rounded-lg flex items-center gap-4 cursor-pointer transition-colors ${paymentMethod === 'Banking' ? 'border-primary bg-blue-50' : 'border-gray-200 hover:border-primary/50'}`}>
                 <input 
-                  disabled
-                  type="radio" name="payment" value="Card" 
-                  className="w-5 h-5 accent-primary cursor-not-allowed" 
+                  type="radio" name="payment" value="Banking" 
+                  checked={paymentMethod === 'Banking'} 
+                  onChange={() => setPaymentMethod('Banking')}
+                  className="w-5 h-5 accent-primary cursor-pointer" 
                 />
                 <div className="flex items-center gap-3">
                   <CreditCard className="text-blue-600" />
                   <div>
-                    <div className="font-bold text-gray-800">Thẻ Tín Dụng / Thẻ Ghi Nợ (Bảo trì)</div>
-                    <div className="text-sm text-gray-500">Tính năng thanh toán trực tuyến đang được nâng cấp</div>
+                    <div className="font-bold text-gray-800">Chuyển khoản Ngân hàng (Mã QR)</div>
+                    <div className="text-sm text-gray-500">Mã QR động sẽ hiện ra sau khi bạn ấn đặt hàng</div>
                   </div>
                 </div>
               </label>

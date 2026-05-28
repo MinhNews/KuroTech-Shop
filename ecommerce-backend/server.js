@@ -37,6 +37,7 @@ const brandRoutes = require('./routes/brand');
 const statsRoutes = require('./routes/stats');
 const chatbotRoutes = require('./routes/chatbot');
 const userRoutes = require('./routes/user');
+const notificationRoutes = require('./routes/notification');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -49,6 +50,7 @@ app.use('/api/brands', brandRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Route test thử
 app.get('/', (req, res) => {

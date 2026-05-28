@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { Trash2, Users, Shield, ShieldAlert, User, CheckCircle } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
@@ -35,7 +36,7 @@ const UserManage = () => {
       await axiosClient.put(`/users/${userId}/role`, { role: newRole });
       setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
     } catch (error) {
-      alert("Lỗi cập nhật phân quyền!");
+      toast.error("Lỗi cập nhật phân quyền!");
       console.error(error);
     }
   };
@@ -46,7 +47,7 @@ const UserManage = () => {
       await axiosClient.delete(`/users/${userId}`);
       setUsers(users.filter(u => u._id !== userId));
     } catch (error) {
-      alert("Lỗi khi xóa người dùng!");
+      toast.error("Lỗi khi xóa người dùng!");
       console.error(error);
     }
   };

@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 // src/pages/admin/ProductManage.jsx
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, X, Search, Image as ImageIcon } from 'lucide-react';
@@ -89,7 +90,7 @@ const ProductManage = () => {
       handleCloseModal();
     } catch (error) {
       console.error("Lỗi khi lưu sản phẩm:", error);
-      alert("Có lỗi xảy ra, vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     } finally {
       setIsUploading(false);
     }
@@ -101,7 +102,7 @@ const ProductManage = () => {
         await deleteProduct(id);
       } catch (error) {
         console.error(error);
-        alert("Xóa thất bại!");
+        toast.error("Xóa thất bại!");
       }
     }
   };

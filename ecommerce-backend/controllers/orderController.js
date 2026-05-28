@@ -5,6 +5,7 @@ const Cart = require('../models/Cart');
 const CartItem = require('../models/CartItem');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
+const Notification = require('../models/Notification');
 
 const orderController = {
     // CHỐT ĐƠN HÀNG (Checkout)
@@ -72,6 +73,17 @@ const orderController = {
             // 6. Xóa toàn bộ CartItem (Dọn dẹp giỏ hàng)
             await CartItem.deleteMany({ cart: cart._id });
 
+            
+            // Tạo thông báo đơn hàng mới
+            const notif = new Notification({
+                user: userId,
+                title: 'Đặt hàng thành công',
+                message: `Đơn hàng #${savedOrder._id.toString().substring(16).toUpperCase()} đã được đặt thành công và đang chờ xác nhận.`,
+                type: 'Order',
+                link: '/my-orders'
+            });
+            await notif.save();
+
             res.status(201).json({ message: "Đặt hàng thành công!", orderId: savedOrder._id, discountApplied: discountValue });
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -82,8 +94,15 @@ const orderController = {
     getUserOrders: async (req, res) => {
         try {
             // Sort { createdAt: -1 } để đơn hàng mới nhất lên đầu
-            const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 });
-            res.status(200).json(orders);
+            const orders = await Order.find({ user: req.user.id }).sort({ createdAt: -1 }).lean();
+            
+            // Lấy thêm order details cho từng đơn hàng
+            const ordersWithItems = await Promise.all(orders.map(async (order) => {
+                const items = await OrderDetail.find({ order: order._id }).populate('product', 'name images price');
+                return { ...order, items };
+            }));
+
+            res.status(200).json(ordersWithItems);
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
@@ -120,6 +139,23 @@ const orderController = {
                 { new: true }
             );
             
+            // 4. Tạo thông báo
+            const statusMap = {
+                'Pending': 'Chờ xác nhận',
+                'Processing': 'Đang xử lý',
+                'Shipped': 'Đang giao hàng',
+                'Delivered': 'Đã giao thành công',
+                'Cancelled': 'Đã hủy'
+            };
+            const notifStatus = new Notification({
+                user: updatedOrder.user,
+                title: 'Cập nhật đơn hàng',
+                message: `Đơn hàng #${updatedOrder._id.toString().substring(16).toUpperCase()} đã chuyển sang trạng thái: ${statusMap[status] || status}.`,
+                type: 'Order',
+                link: '/my-orders'
+            });
+            await notifStatus.save();
+
             res.status(200).json({ message: "Cập nhật trạng thái thành công!", data: updatedOrder });
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -131,6 +167,57 @@ const orderController = {
         try {
             const orders = await Order.find().populate('user', 'username email').sort({ createdAt: -1 });
             res.status(200).json(orders);
+        } catch (error) {
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    }
+
+    ,
+    // LẤY CHI TIẾT 1 ĐƠN HÀNG
+    getOrderById: async (req, res) => {
+        try {
+            const order = await Order.findById(req.params.id);
+            if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+            
+            // Check if user is admin or the owner
+            if (req.user.role !== 'admin' && req.user.role !== 'staff' && order.user.toString() !== req.user.id) {
+                return res.status(403).json({ message: "Không có quyền truy cập" });
+            }
+
+            const items = await OrderDetail.find({ order: order._id }).populate('product', 'name images price');
+            res.status(200).json({ ...order._doc, items });
+        } catch (error) {
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // CẬP NHẬT TRẠNG THÁI THANH TOÁN (Chỉ Admin)
+    updatePaymentStatus: async (req, res) => {
+        try {
+            const { paymentStatus } = req.body;
+            const orderId = req.params.id;
+
+            const order = await Order.findByIdAndUpdate(
+                orderId,
+                { paymentStatus: paymentStatus },
+                { new: true }
+            );
+
+            if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+
+            // Gửi thông báo cho khách hàng nếu đã thanh toán
+            if (paymentStatus === 'Paid') {
+                const userNotification = new Notification({
+                    user: order.user,
+                    title: 'Xác nhận thanh toán',
+                    message: `Thanh toán cho đơn hàng #${order._id.toString().substring(16).toUpperCase()} đã được xác nhận thành công.`,
+                    type: 'Payment',
+                    link: '/my-orders'
+                });
+                await userNotification.save();
+            }
+
+            res.status(200).json({ message: "Cập nhật trạng thái thanh toán thành công!", data: order });
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }

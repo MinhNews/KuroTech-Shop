@@ -31,7 +31,15 @@ const AIChatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await axiosClient.post('/chatbot', { message: userMessage });
+      const history = messages.map(m => ({ 
+        role: m.isBot ? 'model' : 'user', 
+        content: m.text 
+      }));
+
+      const response = await axiosClient.post('/chatbot', { 
+        message: userMessage,
+        history: history
+      });
       const data = response.data.response;
       
       if (typeof data === 'object' && data !== null) {
@@ -49,7 +57,7 @@ const AIChatbot = () => {
 
   return (
     <>
-      {/* Nút bấm mở chat (Pulse Glow Effect) */}
+      {/* Nút bấm mở chat (KuroTech Style) */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button 
@@ -59,14 +67,18 @@ const AIChatbot = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full shadow-[0_0_20px_rgba(79,70,229,0.5)] z-50 flex items-center justify-center animate-pulse-slow"
+            className="fixed bottom-6 right-6 p-4 bg-slate-900 text-white rounded-full shadow-[0_10px_40px_rgba(15,23,42,0.4)] border border-slate-700/50 z-50 flex items-center justify-center group transition-all"
           >
-            <Sparkles size={24} />
+            <Bot size={26} className="text-slate-100 group-hover:text-emerald-400 transition-colors duration-300" />
+            <span className="absolute 0 right-0 top-0 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900"></span>
+            </span>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Cửa sổ chat (Spring Physics) */}
+      {/* Cửa sổ chat */}
       <AnimatePresence>
         {isOpen && (
           <motion.div 
@@ -78,17 +90,20 @@ const AIChatbot = () => {
           >
             {/* Header */}
             <div className="bg-slate-900 text-white p-5 flex justify-between items-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 mix-blend-overlay"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900"></div>
               <div className="flex items-center gap-3 relative z-10">
-                <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-                  <Bot size={22} className="text-blue-300" />
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl backdrop-blur-sm">
+                  <Bot size={24} className="text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg tracking-tight">KuroAI Assistant</h3>
-                  <p className="text-xs text-blue-200/80">Sẵn sàng tư vấn</p>
+                  <h3 className="font-semibold text-lg tracking-tight text-white">KuroAI Assistant</h3>
+                  <p className="text-xs text-emerald-400/90 flex items-center gap-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                    Hệ thống trực tuyến
+                  </p>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-slate-300 hover:text-white transition-transform hover:scale-110 p-2 bg-white/5 rounded-full relative z-10">
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/10 transition-all p-2 rounded-full relative z-10">
                 <X size={18} />
               </button>
             </div>

@@ -24,25 +24,51 @@ import OrderManage from './pages/admin/OrderManage';
 import UserManage from './pages/admin/UserManage';
 import CouponManage from './pages/admin/CouponManage';
 import BrandManage from './pages/admin/BrandManage';
+import AdminReviewManage from './pages/admin/AdminReviewManage';
+import Notifications from './pages/Notifications';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 
 // Component để check xem có render Header hay không (ẩn ở trang admin)
 const MainLayout = ({ children }) => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const { user } = useAuthStore();
+  const hideClientLayout = location.pathname.startsWith('/admin') || (user && ['admin', 'staff'].includes(user.role));
   
   return (
     <>
-      {!isAdminRoute && <Header />}
-      <main className={!isAdminRoute ? "min-h-screen pb-12 pt-[100px]" : ""}>
-        <div className={!isAdminRoute ? "container mx-auto px-4" : ""}>
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+          },
+          success: {
+            style: {
+              background: '#0f172a',
+              border: '1px solid #1e293b'
+            }
+          },
+          error: {
+            style: {
+              background: '#ef4444',
+            }
+          }
+        }} 
+      />
+      {!hideClientLayout && <Header />}
+      <main className={!hideClientLayout ? "min-h-screen pb-12 pt-[100px]" : "min-h-screen"}>
+        <div className={!hideClientLayout ? "container mx-auto px-4" : "p-4"}>
           <AnimatePresence mode="wait">
             {children}
           </AnimatePresence>
         </div>
       </main>
-      {!isAdminRoute && <Footer />}
-      {!isAdminRoute && <AIChatbot />}
+      {!hideClientLayout && <Footer />}
+      {!hideClientLayout && <AIChatbot />}
     </>
   );
 };
@@ -93,6 +119,7 @@ const AnimatedRoutes = () => {
       <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
       <Route path="/reset-password/:token" element={<PageTransition><ResetPassword /></PageTransition>} />
       <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+      <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -103,6 +130,9 @@ const AnimatedRoutes = () => {
         <Route path="users" element={<UserManage />} />
         <Route path="coupons" element={<CouponManage />} />
         <Route path="brands" element={<BrandManage />} />
+        <Route path="reviews" element={<AdminReviewManage />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>
   );
