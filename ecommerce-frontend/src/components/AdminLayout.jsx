@@ -25,10 +25,10 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col transition-all">
-        <div className="p-6">
+        <div className="p-6 shrink-0">
           <Link to="/" className="text-2xl font-bold tracking-tight flex items-center gap-1">
             <span>Kuro</span><span className="text-slate-400 font-light">Tech</span>
             <span className="ml-2 text-[10px] bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -37,7 +37,7 @@ const AdminLayout = () => {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -52,7 +52,7 @@ const AdminLayout = () => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 shrink-0">
           <div className="flex items-center justify-between mb-4">
             <Link to="/admin/profile" className="flex items-center gap-3 p-2 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer text-white flex-1 overflow-hidden">
               <UserAvatar user={user} size="sm" />
