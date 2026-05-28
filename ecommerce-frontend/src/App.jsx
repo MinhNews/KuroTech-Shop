@@ -60,8 +60,8 @@ const MainLayout = ({ children }) => {
         }} 
       />
       {!hideClientLayout && <Header />}
-      <main className={!hideClientLayout ? "min-h-screen pb-12 pt-[100px]" : "min-h-screen"}>
-        <div className={!hideClientLayout ? "container mx-auto px-4" : "p-4"}>
+      <main className={!hideClientLayout ? "min-h-screen pb-12 pt-[100px]" : "h-screen overflow-hidden"}>
+        <div className={!hideClientLayout ? "container mx-auto px-4" : "h-full w-full"}>
           <AnimatePresence mode="wait">
             {children}
           </AnimatePresence>
