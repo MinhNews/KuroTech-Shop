@@ -8,20 +8,26 @@
 
 KuroTech là một nền tảng thương mại điện tử chuyên cung cấp đồ công nghệ (Laptop, Điện thoại, Phụ kiện) với giao diện người dùng hiện đại, tốc độ cao và đặc biệt là được tích hợp **Trợ lý ảo AI thông minh** (sử dụng sức mạnh của Google Gemini 2.5 Flash).
 
+## 🌐 Trải nghiệm Live (Đã Deploy)
+
+- **Frontend (Website):** [https://kurotech.vercel.app](https://kurotech.vercel.app)
+- **Backend API:** Host trên Render (Tự động sleep sau 15p không hoạt động)
 ## ✨ Tính năng nổi bật
 
 ### 🛍️ Dành cho Khách hàng (Client)
 - **Giao diện hiện đại & Responsive:** Tối ưu hóa cho cả PC và thiết bị di động (sử dụng Tailwind CSS).
-- **Trợ lý ảo AI (Chatbot):** Khách hàng có thể chat trực tiếp với AI để nhờ tư vấn sản phẩm. AI sẽ đọc trực tiếp dữ liệu tồn kho, giá cả từ Database và trả về danh sách sản phẩm trực quan dạng Card ngay trong khung chat!
+- **Trợ lý ảo AI (Chatbot):** Khách hàng có thể chat trực tiếp với AI để nhờ tư vấn sản phẩm. AI được **ghi nhớ ngữ cảnh** trò chuyện và có thể đọc trực tiếp dữ liệu tồn kho, giá cả từ Database, trả về danh sách sản phẩm trực quan dạng Card.
 - **Tìm kiếm & Lọc sản phẩm:** Tìm kiếm thông minh theo tên, danh mục.
 - **Giỏ hàng & Thanh toán:** Thêm nhanh vào giỏ hàng mà không cần chuyển trang (sử dụng Zustand quản lý State toàn cục).
-- **Quản lý Tài khoản:** Đăng ký, Đăng nhập, Quên mật khẩu, Theo dõi lịch sử đơn hàng.
+- **Hệ thống Thông báo (Notification):** Cập nhật trạng thái đơn hàng thời gian thực qua chuông thông báo.
+- **Quản lý Tài khoản:** Đăng nhập an toàn bằng Google, Đăng ký, Đăng nhập cơ bản, Quên mật khẩu, Theo dõi lịch sử đơn hàng.
 
 ### 🛡️ Dành cho Quản trị viên (Admin)
 - **Dashboard Thống kê:** Tổng quan doanh thu, số lượng đơn hàng.
 - **Quản lý Sản phẩm & Danh mục:** Thêm, sửa, xóa, tải lên hình ảnh sản phẩm.
 - **Quản lý Đơn hàng:** Cập nhật trạng thái đơn hàng từ lúc đặt đến lúc giao.
-- **Quản lý Người dùng:** Phân quyền và theo dõi hoạt động người dùng.
+- **Quản lý Người dùng & Coupon:** Phân quyền người dùng, tạo mã giảm giá.
+- **Quản lý Đánh giá (Review):** Theo dõi, xóa và trực tiếp phản hồi lại bình luận của Khách hàng ngay trong Dashboard.
 
 ## 🛠️ Công nghệ sử dụng
 
