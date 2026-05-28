@@ -16,7 +16,13 @@ connectDB();
 app.use(express.json()); // Cho phép server đọc dữ liệu JSON từ request body
 app.use(cors({ 
     origin: function(origin, callback) {
-        if (!origin || origin.startsWith('http://localhost:')) {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL, // Link Vercel
+            'http://localhost:5173',
+            'http://localhost:5174'
+        ];
+        // Cho phép postman hoặc những request không có origin
+        if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
